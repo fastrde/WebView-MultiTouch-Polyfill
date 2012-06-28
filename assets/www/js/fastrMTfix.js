@@ -50,14 +50,7 @@ fastr.android.multitouch.Touch = function(id,screenX,screenY,pageX,pageY,target)
 
 	this.identifier = id;	//long
 	this.target 		= target  || null; //EventTarget
-	//TODO: find better way to get XY coordinates
-//	this.screenX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
-//	this.screenY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
-//	this.pageX			= (pageX   / dWidth)  * window['fastrMTfix'].xMul || null; //long
-//	this.pageY			= (pageY   / dHeight) * window['fastrMTfix'].yMul || null; //long
-//	this.clientX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
-//	this.clientY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
-
+    
 	this.screenX		= screenX ; //long
 	this.screenY		= screenY ; //long
 	this.pageX			= pageX   ; //long
@@ -118,7 +111,7 @@ fastr.android.multitouch.TouchList.prototype._fill = function(data){
 	var t;
 	for(var i = 0; i < data.length; i++){
 		t = data[i];
-        console.log("ttt --- " +t.id + t.x + t.y);
+        //console.log("ttt --- " +t.id + t.x + t.y);
 		this.push(new fastr.android.multitouch.Touch(t.id,t.x,t.y,t.x,t.y));
 	}
 }

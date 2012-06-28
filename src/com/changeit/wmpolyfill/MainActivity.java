@@ -1,5 +1,6 @@
 package com.changeit.wmpolyfill;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -23,7 +24,8 @@ public class MainActivity extends Activity
 	/** Called when the activity is first created.
 	 * @param savedInstanceState
 	 */
-    @Override
+    @SuppressLint("SetJavaScriptEnabled")
+	@Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);

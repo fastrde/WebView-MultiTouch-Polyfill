@@ -37,6 +37,8 @@ public class WebClient extends WebViewClient {
 	public Boolean polyfillAllTouches = true;
 
 	protected int moveThreshold = 1;
+	
+	public int movePixelTolerance = 5;
 
 	/** The number of touches already working out-of-the-box (we'll assume at least one for all devices) */
 	public int maxNativeTouches = 1;
@@ -72,10 +74,11 @@ public class WebClient extends WebViewClient {
 	public void onPageFinished(WebView view, String url)
 	{
 //		android.util.Log.v("console", "pagefinished_" + url);
-
+		
 		if (Build.VERSION.SDK_INT <= 10) {
 			this.view = view;
-			WebClient._WMPJS_ = deserializeString();
+			
+			WebClient._WMPJS_ = loadJS("fastrMTfix.js");
 			injectWMPJs();
 			movedBuffer = new StringBuilder();
 			view.setOnTouchListener(new MTfixTouchListener(this));
@@ -170,7 +173,7 @@ public class WebClient extends WebViewClient {
 	private void injectWMPJs()
 	{
 		StringBuilder wmpJs = new StringBuilder();
-		wmpJs.append("javascript: if (!window.WMP || WMP.Version != '" )
+		wmpJs.append("javascript: if (!window.WMPMTfix || WMPMTfix.Version != '" )
 				.append( WebClient.VERSION)
 				.append("')")
 				.append(_WMPJS_)
@@ -234,23 +237,24 @@ public class WebClient extends WebViewClient {
 		sb.append("]");
 		return sb.toString();
 	}
-	public static String deserializeString(){
+	/**
+	 * Loads the file Filename from the assets/js directory and returns it for injection
+	 * @return String
+	 */
+	public static String loadJS(String filename){
 		try{
 		  int len;
 	      char[] chr = new char[4096];
-	      final StringBuffer buffer = new StringBuffer();
-	      
-	      final BufferedReader reader = new BufferedReader(new InputStreamReader(MainActivity.assetmgr.open("www/fastrMTfix.js") ));
+	      final StringBuffer buffer = new StringBuffer();	      
+	      final BufferedReader reader = new BufferedReader(new InputStreamReader(MainActivity.assetmgr.open("www/js/"+filename) ));
 	      try {
 	          while ((len = reader.read(chr)) > 0) {
 	              buffer.append(chr, 0, len);
 	              Log.d("wmp.console",String.valueOf(chr));
 	          }
 	      } finally {
-	          reader.close();
-	          Log.d("wmp.console","CLOSED");
-	      }
-	      //Log.d("wmp.console",buffer.toString());
+	          reader.close();	        
+	      } 
 	      return buffer.toString();
 		}catch(IOException e){
 			Log.d("wmp.console",":..",e);

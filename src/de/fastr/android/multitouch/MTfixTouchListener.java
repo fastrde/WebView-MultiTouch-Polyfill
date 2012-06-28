@@ -76,7 +76,7 @@ public class MTfixTouchListener implements OnTouchListener{
 		//wv.setPictureListener(new PictureListener(){		
 		//    public void onNewPicture(WebView wv, Picture arg1) {
     	//Now called via WebViewClient.onPageFinished
-		    	wv.loadUrl("javascript:if(typeof window.fastrMTfix == 'undefined'){alert('No fastr.de MTfix for Android 2.x Javascript-Backend found.');}");
+		    	wv.loadUrl("javascript:if(typeof window.fastrMTfix == 'undefined'){console.log('No fastr.de MTfix for Android 2.x Javascript-Backend found.');}");
 		    	//wv.setPictureListener(null);
 		//    }	
 		//});
@@ -122,9 +122,10 @@ public class MTfixTouchListener implements OnTouchListener{
 	                  	wv.loadUrl("javascript:window.fastrMTfix.touchend("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
 	                break;	             
 	                case MotionEvent.ACTION_MOVE: //touchmove
-	                 	//if (checkMoved(wv, event)){
+	                 	if (checkMoved(wv, event)){
+	                 		Log.d("wmp.console","Move send");
 	                 		wv.loadUrl("javascript:window.fastrMTfix.touchmove("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
-	                 	//}
+	                 	}
 	                break;
 	        }
 	        return true;               
@@ -142,16 +143,20 @@ public class MTfixTouchListener implements OnTouchListener{
 			for (int i = 0; i < event.getPointerCount(); i++)
 			{
 				/* Ignore Events that doesn't move at all */
-				if ( (int)lastMotionEvent.getX(i) == (int)event.getX(i)
-					&& (int)lastMotionEvent.getY(i) == (int)event.getY(i)
+				
+				if ( Math.abs((int)lastMotionEvent.getX(i) - (int)event.getX(i)) < webclient.movePixelTolerance
+					&& Math.abs((int)lastMotionEvent.getY(i) - (int)event.getY(i)) < webclient.movePixelTolerance
 					// Ignore Events outside of viewport
 					|| (int)event.getX(i) > view.getWidth()
-					|| (int)event.getY(i) > view.getHeight())
-					continue;
+					|| (int)event.getY(i) > view.getHeight()){
+						continue;	
+					}
+
+					lastMotionEvent = MotionEvent.obtain(event);
 					return true;
 			}
+			//lastMotionEvent = null;			
 		}	
-		lastMotionEvent = null;
 		return false;
 	}
 }
