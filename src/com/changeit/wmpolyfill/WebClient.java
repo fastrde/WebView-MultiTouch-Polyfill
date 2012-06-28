@@ -78,7 +78,7 @@ public class WebClient extends WebViewClient {
 		if (Build.VERSION.SDK_INT <= 10) {
 			this.view = view;
 			
-			WebClient._WMPJS_ = loadJS("fastrMTfix.js");
+			WebClient._WMPJS_ = loadJS("fastrMTfix-compiled.js");
 			injectWMPJs();
 			movedBuffer = new StringBuilder();
 			view.setOnTouchListener(new MTfixTouchListener(this));
