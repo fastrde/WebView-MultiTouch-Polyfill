@@ -5,7 +5,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<link href="wmp.css" rel="stylesheet" type="text/css">
-		<script src="wmp.js" type="text/javascript"></script>
+		<!--<script src="wmp.js" type="text/javascript"></script>-->
 <script type="text/javascript">
 			var totalTouchEventCount = 0,
 				totalDebugCount = 0,
@@ -36,7 +36,7 @@
 			/**
 			 * @param {Event}
 			 */
-			function touchListener(e) {
+		function touchListener(e) {
 				// prevent unnerving default gestures (scrolling || automatic number selection for placing a call)
 //				if (e.type == 'touchmove')
 					preventDefaultScroll(e);
@@ -114,8 +114,9 @@
 				tellJsWorking();
 				tellTouchDevice();
 
-				window.setTimeout(tellWmpJsPresent, 100);
+				//window.setTimeout(tellWmpJsPresent, 100);
 			}
+			
 		</script>
 	</head>
 	<body id="body">

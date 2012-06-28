@@ -1,9 +1,12 @@
 package de.fastr.android.multitouch;
 
+import com.changeit.wmpolyfill.WebClient;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -17,16 +20,25 @@ import android.webkit.WebView;
  * @version 0.1
  * 
  */
-@TargetApi(5)
+@TargetApi(8)
 public class MTfixTouchListener implements OnTouchListener{	
-	private Activity activity;
+	//private Activity activity;
+	private WebClient webclient;
+	/** A copy of the last Motion Event */
+	private MotionEvent lastMotionEvent = null;
+
 	/**
 	 * Constructor - sets the current Activity
 	 * @param activity
 	 */
 	public MTfixTouchListener(Activity activity){
 		super();
-		this.activity = activity;
+		//this.activity = activity;
+	}
+	public MTfixTouchListener(WebClient wc){
+		super();
+		this.webclient = wc;
+		//this.activity = activity;
 	}
 	/**
 	 * builds an json compatible Array String
@@ -44,6 +56,7 @@ public class MTfixTouchListener implements OnTouchListener{
 	 			sb.append("]");
 	 		}
 	 	}
+	 	//Log.d("wmp.console","TOUCHES: "+ sb.toString());
 		return sb.toString();
 	}	
 	/**
@@ -52,7 +65,6 @@ public class MTfixTouchListener implements OnTouchListener{
 	 */
     protected DisplayMetrics getDM(){
     	DisplayMetrics dm = new DisplayMetrics();
-    	this.activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
         return dm;
     }
     /**
@@ -85,30 +97,61 @@ public class MTfixTouchListener implements OnTouchListener{
      * sends the touches via javascript to the webapp
      */
     public boolean onTouch(View v, MotionEvent event) {
+    	
         // TODO Auto-generated method stub
         WebView wv = (WebView) v;
-        int action = event.getAction();
-        int actionCode = action & MotionEvent.ACTION_MASK;
-        int id = action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-	 	int pid = event.getPointerId(id);
-	 	DisplayMetrics dm = this.getDM();
-	 	wv.loadUrl("javascript:window.fastrMTfix.setDisplay("+dm.widthPixels+","+dm.heightPixels+")");
-        switch(actionCode){
-                case MotionEvent.ACTION_DOWN: //touchstart     
-                case MotionEvent.ACTION_POINTER_DOWN:
-                   	wv.loadUrl("javascript:window.fastrMTfix.touchstart("+(int)event.getPointerId(pid)+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
-                break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_POINTER_UP: //touchend
-                  	wv.loadUrl("javascript:window.fastrMTfix.touchend("+(int)event.getPointerId(pid)+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
-                break;
-                //TODO: needs revision
-                case MotionEvent.ACTION_MOVE: //touchmove
-                 	
-                   	wv.loadUrl("javascript:window.fastrMTfix.touchmove("+(int)event.getPointerId(pid)+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
-                   	
-                break;
+        checkMTfix(wv);
+        if (webclient.polyfillAllTouches || 
+        	event.getPointerCount() > webclient.maxNativeTouches || 
+        	event.getPointerId( event.getActionIndex() ) + 1 > webclient.maxNativeTouches 
+        	){
+        	int action = event.getAction();
+        	int actionCode = action & MotionEvent.ACTION_MASK;
+        	int id = action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+        	int pid = event.getPointerId(id);
+        	//Log.d("wmp.console",webclient.dumpEvent(event));
+        	//DisplayMetrics dm = this.getDM();
+        	//wv.loadUrl("javascript:window.fastrMTfix.setDisplay("+dm.widthPixels+","+dm.heightPixels+")");
+	        switch(actionCode){
+	                case MotionEvent.ACTION_DOWN: //touchstart     
+	                case MotionEvent.ACTION_POINTER_DOWN:
+	                	wv.loadUrl("javascript:window.fastrMTfix.touchstart("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
+	                break;
+	                case MotionEvent.ACTION_UP:
+	                case MotionEvent.ACTION_POINTER_UP: //touchend
+	                  	wv.loadUrl("javascript:window.fastrMTfix.touchend("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
+	                break;	             
+	                case MotionEvent.ACTION_MOVE: //touchmove
+	                 	//if (checkMoved(wv, event)){
+	                 		wv.loadUrl("javascript:window.fastrMTfix.touchmove("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
+	                 	//}
+	                break;
+	        }
+	        return true;               
         }
-        return true;            
+        return false;
     }
+        
+	private boolean checkMoved(View view, MotionEvent event) {
+		int actionCode = event.getAction() & MotionEvent.ACTION_MASK;
+		if (actionCode == MotionEvent.ACTION_MOVE ) {
+			if (lastMotionEvent == null) {
+				lastMotionEvent = MotionEvent.obtain(event);
+				return true;
+			}
+			for (int i = 0; i < event.getPointerCount(); i++)
+			{
+				/* Ignore Events that doesn't move at all */
+				if ( (int)lastMotionEvent.getX(i) == (int)event.getX(i)
+					&& (int)lastMotionEvent.getY(i) == (int)event.getY(i)
+					// Ignore Events outside of viewport
+					|| (int)event.getX(i) > view.getWidth()
+					|| (int)event.getY(i) > view.getHeight())
+					continue;
+					return true;
+			}
+		}	
+		lastMotionEvent = null;
+		return false;
+	}
 }

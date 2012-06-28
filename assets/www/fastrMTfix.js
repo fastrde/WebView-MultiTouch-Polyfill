@@ -5,27 +5,25 @@
  * triggerd from the Android-Application TouchListener implementation
  * of this Package.
  * 
- * @license
- * This work is licensed under the Creative Commons Attribution 3.0 Unported License. 
- * To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/ 
- * or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
- * 
  * Author: Fabian Strachanski
  * Version: 0.1
  */
 
 
 //// for Closure Compiler support uncomment next line
-goog.provide("fastr.android.multitouch"); 
+//goog.provide("fastr.android.multitouch"); 
 
 //// for Closure Compiler comment out next 2 lines 
-//fastr = {};
-//fastr.android = {};
+
+
+fastr = {};
+fastr.android = {};
 
 /**
  * @constructor
  */
 fastr.android.multitouch = function(){
+    console.log("LOADED");
 	this.pointer    = [];
 	this.androidRes = [];
 
@@ -53,12 +51,19 @@ fastr.android.multitouch.Touch = function(id,screenX,screenY,pageX,pageY,target)
 	this.identifier = id;	//long
 	this.target 		= target  || null; //EventTarget
 	//TODO: find better way to get XY coordinates
-	this.screenX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
-	this.screenY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
-	this.pageX			= (pageX   / dWidth)  * window['fastrMTfix'].xMul || null; //long
-	this.pageY			= (pageY   / dHeight) * window['fastrMTfix'].yMul || null; //long
-	this.clientX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
-	this.clientY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
+//	this.screenX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
+//	this.screenY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
+//	this.pageX			= (pageX   / dWidth)  * window['fastrMTfix'].xMul || null; //long
+//	this.pageY			= (pageY   / dHeight) * window['fastrMTfix'].yMul || null; //long
+//	this.clientX		= (screenX / dWidth)  * window['fastrMTfix'].xMul || null; //long
+//	this.clientY		= (screenY / dHeight) * window['fastrMTfix'].yMul || null; //long
+
+	this.screenX		= screenX ; //long
+	this.screenY		= screenY ; //long
+	this.pageX			= pageX   ; //long
+	this.pageY			= pageY   ; //long
+	this.clientX		= screenX ; //long
+	this.clientY		= screenY ; //long
 
 	if (this.target == null) this.target = document.elementFromPoint(this.screenX,this.screenY);
 }
@@ -113,6 +118,7 @@ fastr.android.multitouch.TouchList.prototype._fill = function(data){
 	var t;
 	for(var i = 0; i < data.length; i++){
 		t = data[i];
+        console.log("ttt --- " +t.id + t.x + t.y);
 		this.push(new fastr.android.multitouch.Touch(t.id,t.x,t.y,t.x,t.y));
 	}
 }
@@ -128,8 +134,8 @@ fastr.android.multitouch.TouchEvent = function(type,changedid,touches){
 	var evt = document.createEvent("Event");	
 	evt.initEvent(type, true, true);
 	evt.touches 				= new fastr.android.multitouch.TouchList(touches,"Touches");
-	evt.targetTouches 	= new fastr.android.multitouch.TouchList(touches,"TargetTouches");
-	evt.changedTouches 	= new fastr.android.multitouch.TouchList(touches,"changedTouches");
+	evt.targetTouches           = new fastr.android.multitouch.TouchList(touches,"TargetTouches");
+	evt.changedTouches          = new fastr.android.multitouch.TouchList(touches,"changedTouches");
 	//evt.changedTouches 	= new fastr.android.multitouch.TouchList([],"changedTouches");
 	//evt.changedTouches.push(evt.touches.identifiedTouch(changedid));
 	evt.altKey					= false;
@@ -142,7 +148,7 @@ fastr.android.multitouch.TouchEvent = function(type,changedid,touches){
 		if (this._target){
 			this._target.dispatchEvent(this);
 		}else{
-    	document.dispatchEvent(this);
+            document.dispatchEvent(this);
 		}
 	}
 	return evt;

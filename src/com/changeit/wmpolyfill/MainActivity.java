@@ -1,7 +1,9 @@
 package com.changeit.wmpolyfill;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -11,10 +13,12 @@ import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
+
 public class MainActivity extends Activity
 {
 	WebView webview;
 	WebClient wmp;
+	public static AssetManager assetmgr;
 
 	/** Called when the activity is first created.
 	 * @param savedInstanceState
@@ -24,6 +28,7 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
 
+        assetmgr = getAssets();
 		webview = new WebView(this);
 		webview.getSettings().setJavaScriptEnabled(true);
 		webview.getSettings().setNavDump(true);		// re-enable console.log events for some 2.2 HTC devices
@@ -55,6 +60,7 @@ public class MainActivity extends Activity
 				}
 			}
 
+			@TargetApi(8)
 			@Override // since API Level 8
         	public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
         	    onConsoleMessage(consoleMessage.message(), consoleMessage.lineNumber(), consoleMessage.sourceId());
@@ -63,7 +69,7 @@ public class MainActivity extends Activity
 
 			@Override	// enable console.log javascript environment, will be sent to adb logcat
         	public void onConsoleMessage(String message, int lineNumber, String sourceID) {
-        	    Log.v("wmp.console", message + " [Line "
+        	    Log.d("wmp.console", message + " [Line "
         	                         + lineNumber + "], Source: "
         	                         + sourceID );
 			}
@@ -78,6 +84,7 @@ public class MainActivity extends Activity
 		webview.setWebChromeClient( wcc);
 		setContentView(webview);
 		webview.loadUrl("file:///android_asset/www/index.html");
+		//webview.loadUrl("file:///android_asset/www/test-pages/touchspector.html");
     }
 
 	/**
@@ -103,6 +110,7 @@ public class MainActivity extends Activity
 				Log.d("wmp.console", features[i]);
 	}
 
+	@TargetApi(5)
 	private String[] getMultiTouchFeatures() {
 		String[] s = new String[4];
 		if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN))
