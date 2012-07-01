@@ -76,33 +76,11 @@ public class WebClient extends WebViewClient {
 //		android.util.Log.v("console", "pagefinished_" + url);
 		
 		if (Build.VERSION.SDK_INT <= 10) {
-			this.view = view;
-			
-			WebClient._WMPJS_ = loadJS("fastrMTfix-compiled.js");
+			this.view = view;		
+			WebClient._WMPJS_ = loadJS("fastrMTfix.js");
 			injectWMPJs();
 			movedBuffer = new StringBuilder();
 			view.setOnTouchListener(new MTfixTouchListener(this));
-			/*View.OnTouchListener() {
-				public boolean onTouch(View arg0, MotionEvent arg1) {
-					WebView view = (WebView) arg0;
-					if (polyfillAllTouches || arg1.getPointerCount() > maxNativeTouches || arg1.getPointerId( arg1.getActionIndex() ) + 1 > maxNativeTouches ) {
-						checkMoved(view, arg1);
-						if (movedBuffer.length() > 0 || arg1.getAction() != MotionEvent.ACTION_MOVE) {
-							String EventJSON = getEvent(arg1);
-							view.loadUrl("javascript: WMP.polyfill(" + EventJSON + ");");
-
-//							android.util.Log.d("debug-console", EventJSON);
-						}
-						return true;
-					}
-
-					/**
-					* FALSE : let other handlers do their work (good if we want to test for already working touchevents)
-					* TRUE : stop propagating / bubbling event to other handlers (good if we don't want selection or zoom handlers to happen in webview)
-					
-					return false;
-				}
-			});*/
 		}
 	}
 
@@ -213,15 +191,15 @@ public class WebClient extends WebViewClient {
 		StringBuilder sb = new StringBuilder();
 		int action = event.getAction();
 		int actionCode = action & MotionEvent.ACTION_MASK;
-
-		if (actionCode == MotionEvent.ACTION_POINTER_DOWN
+		
+		/*if (actionCode == MotionEvent.ACTION_POINTER_DOWN
 				|| actionCode == MotionEvent.ACTION_POINTER_UP
 				|| actionCode == MotionEvent.ACTION_DOWN
 				|| actionCode == MotionEvent.ACTION_UP) {
 			sb.append("FINGER ").append(
 					(action >> MotionEvent.ACTION_POINTER_ID_SHIFT) + 1);
 			sb.append(": ");
-		}
+		}*/
 
 		sb.append("ACTION_").append(names[actionCode]);
 		sb.append(" [");
@@ -250,7 +228,7 @@ public class WebClient extends WebViewClient {
 	      try {
 	          while ((len = reader.read(chr)) > 0) {
 	              buffer.append(chr, 0, len);
-	              Log.d("wmp.console",String.valueOf(chr));
+	              //Log.d("wmp.console",String.valueOf(chr));
 	          }
 	      } finally {
 	          reader.close();	        

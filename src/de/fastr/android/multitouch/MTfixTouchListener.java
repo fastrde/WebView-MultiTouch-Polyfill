@@ -100,7 +100,7 @@ public class MTfixTouchListener implements OnTouchListener{
     	
         // TODO Auto-generated method stub
         WebView wv = (WebView) v;
-        checkMTfix(wv);
+        //checkMTfix(wv);
         if (webclient.polyfillAllTouches || 
         	event.getPointerCount() > webclient.maxNativeTouches || 
         	event.getPointerId( event.getActionIndex() ) + 1 > webclient.maxNativeTouches 
@@ -109,9 +109,8 @@ public class MTfixTouchListener implements OnTouchListener{
         	int actionCode = action & MotionEvent.ACTION_MASK;
         	int id = action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
         	int pid = event.getPointerId(id);
-        	//Log.d("wmp.console",webclient.dumpEvent(event));
-        	//DisplayMetrics dm = this.getDM();
-        	//wv.loadUrl("javascript:window.fastrMTfix.setDisplay("+dm.widthPixels+","+dm.heightPixels+")");
+        	if (actionCode != MotionEvent.ACTION_MOVE) Log.d("wmp.console",webclient.dumpEvent(event));
+     
 	        switch(actionCode){
 	                case MotionEvent.ACTION_DOWN: //touchstart     
 	                case MotionEvent.ACTION_POINTER_DOWN:
@@ -122,8 +121,7 @@ public class MTfixTouchListener implements OnTouchListener{
 	                  	wv.loadUrl("javascript:window.fastrMTfix.touchend("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
 	                break;	             
 	                case MotionEvent.ACTION_MOVE: //touchmove
-	                 	if (checkMoved(wv, event)){
-	                 		Log.d("wmp.console","Move send");
+	                 	if (checkMoved(wv, event)){	                 		
 	                 		wv.loadUrl("javascript:window.fastrMTfix.touchmove("+(int)pid+","+(int)event.getX(pid)+","+(int)event.getY(pid)+","+buildTouches(event)+")");
 	                 	}
 	                break;
@@ -135,7 +133,7 @@ public class MTfixTouchListener implements OnTouchListener{
         
 	private boolean checkMoved(View view, MotionEvent event) {
 		int actionCode = event.getAction() & MotionEvent.ACTION_MASK;
-		if (actionCode == MotionEvent.ACTION_MOVE ) {
+		if (actionCode == MotionEvent.ACTION_MOVE ) {		
 			if (lastMotionEvent == null) {
 				lastMotionEvent = MotionEvent.obtain(event);
 				return true;

@@ -23,17 +23,10 @@ fastr.android = {};
  * @constructor
  */
 fastr.android.multitouch = function(){
-    console.log("LOADED");
-	this.pointer    = [];
-	this.androidRes = [];
+  console.log("LOADED");
+//	this.touches= new fastr.android.multitouch.TouchList();
 
-	//TODO: set multiplicators from phone-app
-	this.xMul = 1.03;	// multiplicator for x coordinates.   
-	this.yMul = 1.11; // multiplicator for y coordinates. 
 }
-window['fastrMTfix'] = new fastr.android.multitouch();
-
-
 /**
  *  Datamodel to describe a single touch.
  *  @constructor
@@ -44,21 +37,26 @@ window['fastrMTfix'] = new fastr.android.multitouch();
  *  @param {number} pageY Y-coord of touch
  *  @param {HTMLElement|null} target
  */
-fastr.android.multitouch.Touch = function(id,screenX,screenY,pageX,pageY,target){ 
-	//var dWidth = window['fastrMTfix'].androidRes[0] / window.innerWidth;
-	//var dHeight = window['fastrMTfix'].androidRes[1] / window.innerHeight;
+fastr.android.multitouch.Touch = function(id,x,y){ 
 
-	this.identifier = id;	//long
-	this.target 		= target  || null; //EventTarget
+	this.identifier     = id;	//long
+	this.target 				= null; //EventTarget
     
-	this.screenX		= screenX ; //long
-	this.screenY		= screenY ; //long
-	this.pageX			= pageX   ; //long
-	this.pageY			= pageY   ; //long
-	this.clientX		= screenX ; //long
-	this.clientY		= screenY ; //long
+	this.screenX				= x; //long
+	this.screenY				= y; //long
+	this.clientX				= x; //long
+	this.clientY				= y; //long
+	this.pageX					= x; //long
+	this.pageY					= y; //long
+	
+	this.radiusX				= null;
+	this.radiusY				= null;
+	this.rotaionAngle		= null;
+	this.force					= null;
 
-	if (this.target == null) this.target = document.elementFromPoint(this.screenX,this.screenY);
+	if (this.target == null) {
+		this.target = document.elementFromPoint(this.screenX,this.screenY);
+	}
 }
 
 /**
@@ -77,8 +75,9 @@ fastr.android.multitouch.prototype['setDisplay'] = function(width,height){
  * @extends Array
  */
 
-fastr.android.multitouch.TouchList = function(data,name){
+fastr.android.multitouch.TouchList = function(data){
 	Array.call(this);
+	this._data = {};
 	data = data || [];
 	this._fill(data);
 }
@@ -92,11 +91,39 @@ fastr.android.multitouch.TouchList.prototype.constructor = fastr.android.multito
 fastr.android.multitouch.TouchList.prototype.item = function(index){
 	return this[index];
 }
+
+fastr.android.multitouch.TouchList.prototype.add= function(touch){
+	this.push(touch);
+	this._data[touch.id] = touch;
+	this.dbg();
+}
+fastr.android.multitouch.TouchList.prototype.del= function(touch){
+	this.push(touch);
+	this._data[touch.id] = touch;
+	this.splice(this.indexOf(touch),1);
+	delete(this._data[touch.id]);
+	this.dbg();
+}
+fastr.android.multitouch.TouchList.prototype.dbg = function(){
+	var str = "ARRAY:  ";
+	for (i = 0; i< this.length; i++){
+		str = str + "["+i+"](" + this[i].id + this[i].x + this[i].y + ")";
+	}
+	console.log(str);
+	var str = "OBJECT: ";
+	for (var i in this._data){
+		str = str + "["+i+"](" + this[i].id + this[i].x + this[i].y + ")";
+	}
+	console.log(str);
+}
+
+
 /**
  * searches for the item with the given identifier 
  * @param identifier
  */
 fastr.android.multitouch.TouchList.prototype.identifiedTouch = function(identifier){
+	this._data = [];
 	for(var i = 0; i < this.length; i++){
 		if (this[i].identifier == identifier){
 			return this[i];
@@ -124,11 +151,16 @@ fastr.android.multitouch.TouchList.prototype._fill = function(data){
  * @return {Object} the generated DOM-Event 
  */
 fastr.android.multitouch.TouchEvent = function(type,changedid,touches){
+    var str = type + "[";
+    for (var i=0; i< touches.length; i++){
+        str = str + "("+ touches[i].id + " " + touches[i].x + " " + touches[i].y +")";
+    }
+    console.log(str+"]");
 	var evt = document.createEvent("Event");	
 	evt.initEvent(type, true, true);
-	evt.touches 				= new fastr.android.multitouch.TouchList(touches,"Touches");
-	evt.targetTouches           = new fastr.android.multitouch.TouchList(touches,"TargetTouches");
-	evt.changedTouches          = new fastr.android.multitouch.TouchList(touches,"changedTouches");
+	evt.touches 					= touches; //new fastr.android.multitouch.TouchList(touches,"Touches");
+	evt.targetTouches     = new fastr.android.multitouch.TouchList(touches,"TargetTouches");
+	evt.changedTouches    = new fastr.android.multitouch.TouchList(touches,"changedTouches");
 	//evt.changedTouches 	= new fastr.android.multitouch.TouchList([],"changedTouches");
 	//evt.changedTouches.push(evt.touches.identifiedTouch(changedid));
 	evt.altKey					= false;
@@ -157,7 +189,8 @@ fastr.android.multitouch.TouchEvent = function(type,changedid,touches){
  * @param {Object} data touchevent information send from the phone
  */
 fastr.android.multitouch.prototype['touchstart'] = function(id, x, y, data){
-	var evt = new fastr.android.multitouch.TouchEvent("touchstart",id,data);
+	this.touches.add(new fastr.android.multitouch.Touch(id, x, y));
+	var evt = new fastr.android.multitouch.TouchEvent("touchstart", id, this.touches);//data);
 	evt._send();	
 }
 
@@ -181,7 +214,12 @@ fastr.android.multitouch.prototype['touchmove'] = function(id, x, y, data){
  * @param {Object} data touchevent information send from the phone
  */
 fastr.android.multitouch.prototype['touchend'] = function(id, x, y, data){
-	var evt = new fastr.android.multitouch.TouchEvent("touchend",id,data);
+	this.touches.del(id);
+	var evt = new fastr.android.multitouch.TouchEvent("touchend",id,this.touches);
 	evt._send();	
 }
+
+
+window['fastrMTfix'] = new fastr.android.multitouch();
+window['fastrMTfix'].touches = new fastr.android.multitouch.TouchList();
 

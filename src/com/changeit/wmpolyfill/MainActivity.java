@@ -67,8 +67,8 @@ public class MainActivity extends Activity
         	public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
         	    onConsoleMessage(consoleMessage.message(), consoleMessage.lineNumber(), consoleMessage.sourceId());
 				return true;
-			}
-
+			} 
+			
 			@Override	// enable console.log javascript environment, will be sent to adb logcat
         	public void onConsoleMessage(String message, int lineNumber, String sourceID) {
         	    Log.d("wmp.console", message + " [Line "
